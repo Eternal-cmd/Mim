@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>بيئتك نظيفة - جيجل</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: #f0f4f0;
+    direction: rtl;
+  }
+  .landing {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #0f4527, #1a6b3c, #2d9b5a);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .logo-circle {
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    margin-bottom: 20px;
+  }
+  .landing h1 { color: white; font-size: 36px; margin-bottom: 10px; }
+  .btn {
+    padding: 14px 30px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px;
+    border: none;
+    font-family: inherit;
+  }
+  .btn-primary { background: white; color: #1a6b3c; }
+  .btn-outline { background: transparent; color: white; border: 2px solid white; }
+  #app { display: none; }
+  .app-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #f0f4f0;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 70px;
+  }
+  .screen { display: none; min-height: 100vh; padding: 20px; }
+  .screen.active { display: block; }
+  .header {
+  background: linear-gradient(135deg, #0f4527, #1a6b3c);
+  padding: 50px 20px 30px;
+  border-radius: 0 0 25px 25px;
+  color: white;
+  margin-bottom: 20px;
+}
+.header h2 { font-size: 24px; }
+.login-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px 20px;
+  margin-top: 30px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  font-size: 16px;
+  margin: 10px 0;
+  font-family: inherit;
+  text-align: right;
+}
+button { font-family: inherit; cursor: pointer; }
+#map {
+  height: 450px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 15px 0;
+  border: 2px solid #1a6b3c;
+}
+.points-card {
+  background: linear-gradient(135deg, #f9a825, #fbc02d);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+}
+.points-number { font-size: 48px; font-weight: 900; }
+.level { font-size: 18px; margin-top: 10px; }
+.progress-bar {
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  height: 12px;
+  margin: 15px 0;
+  overflow: hidden;
+}
+.progress-fill {
+  background: white;
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 20px 0;
+}
+.service-card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.service-card:active { transform: scale(0.97); }
+.service-icon { font-size: 40px; margin-bottom: 10px; }
+.report-option {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border: 2px solid #ddd;
+}
+.report-option.selected { border-color: #1a6b3c; background: #e8f5e9; }
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  font-family: inherit;
+  margin: 10px 0;
+}
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 500px;
+  margin: 0 auto;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 20px 25px;
+  border-top: 1px solid #ddd;
+  z-index: 100;
+}
+.nav-item {
+  text-align: center;
+  cursor: pointer;
+  color: #888;
+}
+.nav-item.active { color: #1a6b3c; }
+.nav-icon { font-size: 24px; }
+.nav-label { font-size: 11px; margin-top: 5px; }
+  .success-screen {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .success-icon { font-size: 70px; margin-bottom: 20px; }
+  .history-item {
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .points-gain { color: #1a6b3c; font-weight: bold; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<!-- LANDING PAGE -->
+<div class="landing" id="landingPage">
+  <div class="logo-circle">♻️</div>
+  <h1>بيئتك نظيفة</h1>
+  <p style="color:white; margin-bottom: 30px;">تطبيق إدارة النفايات الذكي - ولاية جيجل</p>
+  <button class="btn btn-primary" onclick="startApp()">🚀 تشغيل التطبيق</button>
+  <button class="btn btn-outline" onclick="showQRCode()">📱 QR Code</button>
+</div>
+
+<!-- APP CONTAINER -->
+<div id="app">
+<div class="app-container">
+
+  <!-- SPLASH / LOGIN SCREEN -->
+  <div class="screen active" id="splashScreen">
+    <div class="header" style="text-align: center;">
+      <div style="font-size: 60px; margin-bottom: 10px;">🌍</div>
+      <h2>بيئتك نظيفة</h2>
+      <p>ولاية جيجل</p>
+    </div>
+    <div class="login-card">
+      <button class="btn btn-primary" style="width: 100%; background: #1a6b3c; color: white;" onclick="showLoginPage()">تسجيل الدخول</button>
+      <button class="btn btn-outline" style="width: 100%; margin-top: 10px; border-color: #1a6b3c; color: #1a6b3c;" onclick="showLoginPage()">إنشاء حساب جديد</button>
+    </div>
+  </div>
+  <!-- LOGIN FORM PAGE -->
+<div class="screen" id="loginPage">
+  <div class="header">
+    <button onclick="backToSplash()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">← رجوع</button>
+    <h2>تسجيل الدخول</h2>
+  </div>
+  <div class="login-card">
+    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+    <input type="password" id="loginPassword" placeholder="كلمة المرور">
+    <button class="btn btn-primary" style="width: 100%; background: #1a6b3c; color: white;" onclick="doLogin()">دخول</button>
+    <p style="text-align: center; margin-top: 15px; color: #1a6b3c; cursor: pointer;" onclick="showRegisterPage()">ليس لديك حساب؟ سجل الآن</p>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div class="screen" id="registerPage">
+  <div class="header">
+    <button onclick="backToLogin()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">← رجوع</button>
+    <h2>إنشاء حساب</h2>
+  </div>
+  <div class="login-card">
+    <input type="text" id="regName" placeholder="الاسم الكامل">
+    <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
+    <input type="password" id="regPassword" placeholder="كلمة المرور">
+    <button class="btn btn-primary" style="width: 100%; background: #1a6b3c; color: white;" onclick="doRegister()">تسجيل</button>
+  </div>
+</div>
+
+<!-- HOME SCREEN -->
+<div class="screen" id="homeScreen">
+  <div class="header">
+    <div style="display: flex; justify-content: space-between;">
+      <span>👤 <span id="userName">أحمد</span></span>
+      <span>⭐ <span id="userPoints">0</span> نقطة</span>
+    </div>
+    <h2 style="margin-top: 15px;">الرئيسية</h2>
+  </div>
+      <h3 style="margin-top: 20px;">الموقع (اختياري):</h3>
+    <input type="text" id="reportLocation" placeholder="اكتب اسم المنطقة في جيجل">
+
+    <h3>ملاحظات إضافية:</h3>
+    <textarea id="reportNotes" rows="3" placeholder="تفاصيل المشكلة..."></textarea>
+
+    <button class="btn btn-primary" style="width: 100%; background: #1a6b3c; color: white; padding: 15px;" onclick="submitReport()">إرسال البلاغ</button>
+  </div>
+  <div id="reportSuccess" style="display: none; text-align: center; padding: 40px 20px;">
+    <div class="success-icon">✅</div>
+    <h2>تم الإرسال بنجاح!</h2>
+    <p>شكراً لك على مساهمتك في نظافة جيجل</p>
+    <p style="color: #1a6b3c; font-size: 20px; margin: 15px 0;">+10 نقاط</p>
+    <button class="btn btn-primary" onclick="closeSuccessAndGoHome()">العودة للرئيسية</button>
+  </div>
+</div>
+
+<!-- POINTS HISTORY -->
+<div class="screen" id="pointsScreen">
+  <div class="header">
+    <button onclick="backToHome()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">← رجوع</button>
+    <h2>سجل النقاط</h2>
+  </div>
+  <div id="historyList" style="padding: 15px 0;"></div>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div class="screen" id="profileScreen">
+  <div class="header">
+    <button onclick="backToHome()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">← رجوع</button>
+    <h2>الملف الشخصي</h2>
+  </div>
+  <div style="text-align: center; padding: 20px;">
+    <div style="font-size: 80px;">👤</div>
+    <h3 id="profileName">أحمد محمد</h3>
+    <p id="profileEmail">ahmed@example.com</p>
+    <hr style="margin: 20px 0;">
+          <div style="display: flex; justify-content: space-around;">
+        <div><div style="font-size: 24px; font-weight: bold;" id="profilePoints">0</div><div>نقطة</div></div>
+        <div><div style="font-size: 24px; font-weight: bold;" id="profileReports">0</div><div>بلاغ</div></div>
+      </div>
+      <button class="btn btn-outline" onclick="logout()" style="margin-top: 30px; border-color: #e53935; color: #e53935;">تسجيل الخروج</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goToHome()"><div class="nav-icon">🏠</div><div class="nav-label">الرئيسية</div></div>
+    <div class="nav-item" onclick="showMapScreen()"><div class="nav-icon">🗺️</div><div class="nav-label">الخريطة</div></div>
+    <div class="nav-item" onclick="showReportScreen()"><div class="nav-icon">📢</div><div class="nav-label">إبلاغ</div></div>
+    <div class="nav-item" onclick="showPointsHistory()"><div class="nav-icon">⭐</div><div class="nav-label">نقاطي</div></div>
+    <div class="nav-item" onclick="showProfileScreen()"><div class="nav-icon">👤</div><div class="nav-label">الحساب</div></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ============ بيانات المستخدم ============
+let currentUser = {
+  name: "أحمد محمد",
+  email: "ahmed@example.com",
+  points: 0,
+  reportsCount: 0,
+  history: []
+};
+
+// ============ نقاط جيجل على الخريطة ============
+const JIJEL_CENTER = [36.8206, 5.7667];
+
+const mapPoints = [
+  { lat: 36.8206, lng: 5.7667, type: "empty", name: "حاوية حي بوعيرة" },
+  { lat: 36.8180, lng: 5.7700, type: "full", name: "حاوية حي تاسوست" },
+  { lat: 36.8220, lng: 5.7600, type: "full", name: "حاوية حي أولاد قاسم" },
+  { lat: 36.8150, lng: 5.7750, type: "empty", name: "حاوية حي الروابي" },
+  { lat: 36.8250, lng: 5.7550, type: "waste", name: "بؤرة قمامة عشوائية - حي الشرفة" },
+  { lat: 36.8100, lng: 5.7800, type: "waste", name: "بؤرة قمامة - دوار السوالم" },
+    { lat: 36.8300, lng: 5.7500, type: "full", name: "حاوية حي بوجمعة" },
+  { lat: 36.8280, lng: 5.7700, type: "empty", name: "حاوية حي الصومام" },
+  { lat: 36.8120, lng: 5.7850, type: "waste", name: "قمامة عشوائية - قرب الشريط الساحلي" },
+  { lat: 36.8350, lng: 5.7400, type: "full", name: "حاوية حي دهمة" },
+  { lat: 36.8000, lng: 5.7950, type: "empty", name: "حاوية حي الرغاية" },
+  { lat: 36.8400, lng: 5.7600, type: "waste", name: "بؤرة قمامة - حي الزرقة" }
+];
+
+let map = null;
+
+function initMap() {
+  if (map) return;
+  map = L.map('map').setView(JIJEL_CENTER, 13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+  }).addTo(map);
+  
+  mapPoints.forEach(point => {
+    let color, iconHtml;
+    if (point.type === 'full') { color = '#e53935'; iconHtml = '🔴'; }
+    else if (point.type === 'empty') { color = '#43a047'; iconHtml = '🟢'; }
+    else { color = '#fbc02d'; iconHtml = '🟡'; }
+    
+    const customIcon = L.divIcon({
+      html: `<div style="background:${color}; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; border:2px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.3);">${iconHtml}</div>`,
+      iconSize: [28, 28],
+      className: 'custom-marker'
+    });
+    L.marker([point.lat, point.lng], { icon: customIcon }).addTo(map).bindPopup(`<b>${point.name}</b><br>${point.type === 'full' ? '🔴 ممتلئة' : point.type === 'empty' ? '🟢 فارغة' : '🟡 بؤرة قمامة'}`);
+  });
+}
+
+function updatePointsAndLevel() {
+  document.getElementById('pointsDisplay').innerText = currentUser.points;
+  document.getElementById('userPoints').innerText = currentUser.points;
+  document.getElementById('profilePoints').innerText = currentUser.points;
+  document.getElementById('profileReports').innerText = currentUser.reportsCount;
+  
+  let level = 1, nextLevelPoints = 50, levelName = "🌱 مبتدئ";
+  if (currentUser.points >= 300) { level = 5; nextLevelPoints = 500; levelName = "🏆 أسطورة بيئية"; }
+  else if (currentUser.points >= 200) { level = 4; nextLevelPoints = 300; levelName = "💚 سفير بيئي"; }
+  else if (currentUser.points >= 100) { level = 3; nextLevelPoints = 200; levelName = "⭐ ناشط بيئي"; }
+  else if (currentUser.points >= 50) { level = 2; nextLevelPoints = 100; levelName = "🌿 مهتم بالبيئة"; }
+  
+  const pointsToNext = Math.max(0, nextLevelPoints - currentUser.points);
+  const progressPercent = Math.min(100, (currentUser.points / nextLevelPoints) * 100);
+  document.getElementById('levelDisplay').innerHTML = `${levelName} - المستوى ${level}`;
+  document.getElementById('progressFill').style.width = `${progressPercent}%`;
+  document.getElementById('nextLevelText').innerText = `تحتاج ${pointsToNext} نقطة للمستوى التالي`;
+}
+
+function addPoints(points, reason) {
+  currentUser.points += points;
+  currentUser.reportsCount++;
+  currentUser.history.unshift({ date: new Date().toLocaleString('ar'), points: points, reason: reason });
+  updatePointsAndLevel();
+  saveUserData();
+}
+let selectedReportType = null;
+function selectReportType(el, type) {
+  document.querySelectorAll('.report-option').forEach(opt => opt.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedReportType = type;
+}
+
+function submitReport() {
+  if (!selectedReportType) { alert("الرجاء اختيار نوع المشكلة"); return; }
+  let reason = selectedReportType === 'bin_full' ? "إبلاغ عن حاوية ممتلئة" : (selectedReportType === 'waste_pile' ? "إبلاغ عن بؤرة قمامة" : "إبلاغ عن مشكلة نفايات");
+  addPoints(10, reason);
+  document.getElementById('reportForm').style.display = 'none';
+  document.getElementById('reportSuccess').style.display = 'block';
+  saveUserData();
+}
+
+function closeSuccessAndGoHome() {
+  document.getElementById('reportForm').style.display = 'block';
+  document.getElementById('reportSuccess').style.display = 'none';
+  selectedReportType = null;
+  document.getElementById('reportLocation').value = '';
+  document.getElementById('reportNotes').value = '';
+  document.querySelectorAll('.report-option').forEach(opt => opt.classList.remove('selected'));
+  showScreen('homeScreen');
+}
+
+function showPointsHistory() {
+  const historyDiv = document.getElementById('historyList');
+  if (currentUser.history.length === 0) historyDiv.innerHTML = '<p style="text-align:center; padding:40px;">لا توجد نقاط بعد</p>';
+  else historyDiv.innerHTML = currentUser.history.map(h => `<div class="history-item"><div><div>${h.reason}</div><div style="font-size:12px; color:#888;">${h.date}</div></div><div class="points-gain">+${h.points}</div></div>`).join('');
+  showScreen('pointsScreen');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const bottomNav = document.querySelector('.bottom-nav');
+  const noNavScreens = ['splashScreen', 'loginPage', 'registerPage'];
+  bottomNav.style.display = noNavScreens.includes(id) ? 'none' : 'flex';
+}
+
+function startApp() { document.getElementById('landingPage').style.display = 'none'; document.getElementById('app').style.display = 'block'; showScreen('splashScreen'); }
+function showLoginPage() { showScreen('loginPage'); }
+function showRegisterPage() { showScreen('registerPage'); }
+function backToSplash() { showScreen('splashScreen'); }
+function backToLogin() { showScreen('loginPage'); }
+function backToHome() { showScreen('homeScreen'); }
+function showMapScreen() { initMap(); showScreen('mapScreen'); }
+function showReportScreen() { showScreen('reportScreen'); }
+function showProfileScreen() { showScreen('profileScreen'); }
+function goToHome() { showScreen('homeScreen'); }
+
+function doLogin() { const email = document.getElementById('loginEmail').value; if(email.trim()===""){alert("الرجاء إدخال البريد");return;} loadUserData(email); showScreen('homeScreen'); }
+function doRegister() { const name=document.getElementById('regName').value, email=document.getElementById('regEmail').value; if(name===""||email===""){alert("املأ الحقول");return;} currentUser={name:name,email:email,points:0,reportsCount:0,history:[]}; updatePointsAndLevel(); saveUserData(); showScreen('homeScreen'); }
+function logout() { currentUser={name:"أحمد محمد",email:"ahmed@example.com",points:0,reportsCount:0,history:[]}; updatePointsAndLevel(); showScreen('splashScreen'); }
+function saveUserData() { localStorage.setItem('jijelUser', JSON.stringify(currentUser)); }
+function loadUserData(email) { const saved=localStorage.getItem('jijelUser'); if(saved){const data=JSON.parse(saved); if(data.email===email)currentUser=data; else currentUser={name:email.split('@')[0],email:email,points:0,reportsCount:0,history:[]};} else currentUser={name:email.split('@')[0],email:email,points:0,reportsCount:0,history:[]}; document.getElementById('userName').innerText=currentUser.name; document.getElementById('profileName').innerText=currentUser.name; document.getElementById('profileEmail').innerText=currentUser.email; updatePointsAndLevel(); saveUserData(); }
+function showQRCode() { alert("QR Code: biiatak-jijel.app"); }
+updatePointsAndLevel();
+</script>
+</body>
+</html>
